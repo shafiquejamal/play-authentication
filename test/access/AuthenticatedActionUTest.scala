@@ -38,7 +38,7 @@ class AuthenticatedActionUTest extends FlatSpec with ShouldMatchers with OneAppP
 
   val uUIDProvider = new TestUUIDProviderImpl()
   val uUID = uUIDProvider.randomUUID()
-  val configuration = new Configuration(ConfigFactory.parseFile(new File("conf/application.conf")).resolve())
+  val configuration = new Configuration(ConfigFactory.parseFile(new File("conf/application.test.conf")).resolve())
   val controller =
     new ExampleController(mockedAuthenticationAPI, jWTParamsProvider, configuration, new TestTimeProviderImpl())
   val timeProvider = new TestTimeProviderImpl
