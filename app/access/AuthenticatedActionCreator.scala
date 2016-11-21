@@ -30,7 +30,8 @@ trait AuthenticatedActionCreator {
       allowedTokens: AllowedTokens,
       claim: JsObject): T =
     claim.value.get("iat").flatMap(_.asOpt[DateTime]).fold[T](unauthorized) { iat =>
-      val tokenExpired = iat.isBefore(timeProvider.now().minusDays(configuration.getInt("crauth.jwtValidityDays")))
+      val jWTValidity = configuration.getInt("crauth.jwtValidityDays")
+      val tokenExpired = iat.isBefore(timeProvider.now().minusDays(jWTValidity)) && jWTValidity > 0
       if (tokenExpired)
         unauthorized
       else {
