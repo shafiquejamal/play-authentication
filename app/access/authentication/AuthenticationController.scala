@@ -4,6 +4,8 @@ import access.authentication.AuthenticationMessage._
 import access.authentication.EmailMessage._
 import access.authentication.ResetPasswordMessage._
 import access.{AuthenticatedActionCreator, JWTParamsProvider}
+import akka.actor.{PoisonPill, ActorSystem}
+import akka.stream.Materializer
 import com.google.inject.Inject
 import pdi.jwt.JwtJson
 import play.Configuration
@@ -22,7 +24,9 @@ class AuthenticationController @Inject() (
     uUIDProvider: UUIDProvider,
     passwordResetCodeSender: PasswordResetCodeSender,
     override val timeProvider: TimeProvider,
-    override val configuration: Configuration)
+    override val configuration: Configuration,
+    system: ActorSystem,
+    materializer: Materializer)
   extends Controller
   with AuthenticatedActionCreator {
 
@@ -45,6 +49,7 @@ class AuthenticationController @Inject() (
   def logoutAllDevices = AuthenticatedAction(parse.json) { request =>
     authenticationAPI.logoutAllDevices(request.userId) match {
       case Success(_) =>
+        system.actorSelection(s"/user/${request.userId}*") ! PoisonPill
         Ok(Json.obj("status" -> "success"))
       case Failure(failure) =>
         Ok(Json.obj("status" -> failure.getMessage))
