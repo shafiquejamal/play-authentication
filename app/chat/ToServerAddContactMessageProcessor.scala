@@ -20,7 +20,9 @@ class ToServerAddContactMessageProcessor(
 
     case toServerAddContactMessage: ToServerAddContactMessage =>
 
-      val maybeUserIdOfContactToAdd = userAPI.by(toServerAddContactMessage.usernameOfContactToAdd)
+      val maybeUserIdOfContactToAdd =
+        userAPI.by(toServerAddContactMessage.usernameOfContactToAdd)
+        .orElse(userAPI.findByEmailLatest(toServerAddContactMessage.usernameOfContactToAdd).flatMap(_.maybeId))
       maybeUserIdOfContactToAdd foreach { userIdOfContactToAdd =>
         chatContactsAPI.addContact(clientId, userIdOfContactToAdd) match {
           case Success(uUID) =>
