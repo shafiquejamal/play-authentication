@@ -6,7 +6,7 @@ import com.google.inject.Inject
 import contact.ChatContactDAO
 import util.TimeProvider
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 trait ChatContactAPI {
 
@@ -23,7 +23,11 @@ class ChatContactFacade @Inject()(
   override def visibleContactsFor(userId: UUID): Seq[String] =
     contactDAO.visibleContactsFor(userId).map(_.contactUsername)
 
-  override def addContact(forUserId: UUID, contactUserId: UUID): Try[UUID] =
-    contactDAO.addContact(forUserId, contactUserId, timeProvider.now())
+  override def addContact(forUserId: UUID, contactUserId: UUID): Try[UUID] = {
+    if (forUserId == contactUserId)
+      Failure(new Exception("Cannot add self"))
+    else
+      contactDAO.addContact(forUserId, contactUserId, timeProvider.now())
+  }
 
 }
