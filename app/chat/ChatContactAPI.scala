@@ -14,6 +14,8 @@ trait ChatContactAPI {
 
   def addContact(forUserId: UUID, contactUserId: UUID): Try[UUID]
 
+  def addContacts(forUserId: UUID, contactUserIds: Seq[UUID]): Seq[UUID]
+
 }
 
 class ChatContactFacade @Inject()(
@@ -29,5 +31,10 @@ class ChatContactFacade @Inject()(
     else
       contactDAO.addContact(forUserId, contactUserId, timeProvider.now())
   }
+
+  override def addContacts(forUserId: UUID, contactUserIds: Seq[UUID]): Seq[UUID] =
+    contactUserIds
+    .filterNot(_ == forUserId)
+    .flatMap { contactUserId => contactDAO.addContact(forUserId, contactUserId, timeProvider.now()).toOption }
 
 }

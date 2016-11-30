@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import chat._
-import contact.{ToServerAddContactMessage, ToServerRequestContactsMessage}
+import contact.ToServerRequestContactsMessage
 import user.UserAPI
 import util.{TimeProvider, UUIDProvider}
 
@@ -49,9 +49,9 @@ class ToServerMessageRouter(
 
       toServerRequestContactsMessageActor ! toServerRequestContactsMessage
 
-    case toServerAddContactMessage: ToServerAddContactMessage =>
+    case toServerAddContactOrContactsMessage: ToServerAddContactOrContactsMessage =>
 
-      toServerAddContactMessageActor ! toServerAddContactMessage
+      toServerAddContactMessageActor ! toServerAddContactOrContactsMessage
 
   }
 

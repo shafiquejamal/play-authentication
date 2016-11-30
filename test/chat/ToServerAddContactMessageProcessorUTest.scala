@@ -2,7 +2,7 @@ package chat
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
-import contact.{ToServerAddContactMessage, ToServerRequestContactsMessage}
+import contact.{ToServerAddContactMessage, ToServerAddContactsMessage, ToServerRequestContactsMessage}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpecLike, ShouldMatchers}
 import user.UserAPI
@@ -26,9 +26,10 @@ class ToServerAddContactMessageProcessorUTest
   val username = "some_user_to_add"
   val toServerAddContactMessage = ToServerAddContactMessage(username)
 
+  val userIdOfUserToAdd = uUIDProvider.randomUUID()
+
   "The ToServerAddContactMessageProcessor" should "add the contact to the db and send out a request contacts message" +
   "to the request contacts message processor, if the user exists" in {
-    val userIdOfUserToAdd = uUIDProvider.randomUUID()
     (mockUserAPI.by(_: String)).expects(username).returning(Some(userIdOfUserToAdd))
     (mockChatContactAPI.addContact _).expects(clientId, userIdOfUserToAdd).returning(Success(userIdOfUserToAdd))
 
@@ -50,6 +51,19 @@ class ToServerAddContactMessageProcessorUTest
     toServerAddContactMessageProcessor ! ToServerRequestContactsMessage("")
 
     expectNoMsg()
+  }
+
+  it should "add multiple contacts if multiple contacts were sent" in {
+    val anotherUserIdOfUserToAdd = uUIDProvider.randomUUID()
+    val anotherUsername = "another_username"
+    (mockUserAPI.by(_: String)).expects(username).returning(Some(userIdOfUserToAdd))
+    (mockUserAPI.by(_: String)).expects(anotherUsername).returning(Some(anotherUserIdOfUserToAdd))
+    (mockChatContactAPI.addContacts _).expects(clientId, Seq(userIdOfUserToAdd, anotherUserIdOfUserToAdd))
+      .returning(Seq(userIdOfUserToAdd, anotherUserIdOfUserToAdd))
+
+    toServerAddContactMessageProcessor ! ToServerAddContactsMessage(Seq(username, anotherUsername))
+
+    expectMsg(ToServerRequestContactsMessage(""))
   }
 
 }

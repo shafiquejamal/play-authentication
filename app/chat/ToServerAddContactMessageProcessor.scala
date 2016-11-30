@@ -3,7 +3,7 @@ package chat
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import contact.{ToServerAddContactMessage, ToServerRequestContactsMessage}
+import contact.{ToServerAddContactMessage, ToServerAddContactsMessage, ToServerRequestContactsMessage}
 import user.UserAPI
 
 import scala.util.{Failure, Success}
@@ -30,6 +30,16 @@ class ToServerAddContactMessageProcessor(
           case Failure(_) =>
         }
       }
+
+    case toServerAddContactsMessage: ToServerAddContactsMessage =>
+
+      val userIdsOfContactsToAdd =
+        toServerAddContactsMessage.usernamesOfContactToAdd.flatMap { usernameOfContactToAdd =>
+          userAPI.by(usernameOfContactToAdd)
+          .orElse(userAPI.findByEmailLatest(usernameOfContactToAdd).flatMap(_.maybeId))
+        }
+      chatContactsAPI.addContacts(clientId, userIdsOfContactsToAdd)
+      toServerRequestContactsMessageActor ! ToServerRequestContactsMessage("")
 
   }
 

@@ -1,9 +1,9 @@
 package contact
 
 import socket.ToServerSocketMessageType.ToServerAddContact
-import socket.{SocketMessageType, ToServerSocketMessage}
+import socket.{SocketMessageType, ToServerAddContactOrContactsMessage}
 
-case class ToServerAddContactMessage(usernameOfContactToAdd: String) extends ToServerSocketMessage {
+case class ToServerAddContactMessage(usernameOfContactToAdd: String) extends ToServerAddContactOrContactsMessage {
 
   override def socketMessageType: SocketMessageType = ToServerAddContact
 

@@ -21,18 +21,17 @@ class SocketActor(
 
   import play.api.libs.json.JsValue
 
-  val toServerMessageActor =
+  val toServerMessageRouter =
     context.actorOf(
       ToServerMessageRouter.props(
         client, userAPI, chatMessageAPI, chatContactsAPI, clientId, clientUsername, timeProvider, uUIDProvider))
-
 
   override def receive = {
 
     case msg: JsValue =>
       val messageType = (msg \ "messageType").validate[String].getOrElse("")
       val socketMessage = ToServerSocketMessageType.from(messageType).socketMessage(msg)
-      socketMessage.send(client, toServerMessageActor)
+      socketMessage.send(client, toServerMessageRouter)
 
     case toClientSocketMessage : ToClientSocketMessage =>
 

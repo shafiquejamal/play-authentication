@@ -1,14 +1,14 @@
 package contact
 
 import chat.ChatContactFacade
-import db.{TestScalikeJDBCSessionProvider, TestDBConnection, CrauthAutoRollback}
+import db.{CrauthAutoRollback, TestDBConnection, TestScalikeJDBCSessionProvider}
+import org.scalatest.LoneElement._
+import org.scalatest.TryValues._
 import org.scalatest._
 import org.scalatest.fixture.FlatSpec
 import scalikejdbc.DBSession
 import user.UserFixture
-import util.{TestUUIDProviderImpl, TestTimeProviderImpl}
-import LoneElement._
-import TryValues._
+import util.{TestTimeProviderImpl, TestUUIDProviderImpl}
 
 class ChatContactFacadeATest
   extends FlatSpec
@@ -32,6 +32,11 @@ class ChatContactFacadeATest
   it should "fail if someone tries to add oneself as a contact" in { session =>
     val api = makeAPI(session)
     api.addContact(id1, id1).failure.exception.getMessage shouldEqual "Cannot add self"
+  }
+
+  "Adding multiple contacts" should "add only the contacts that is not oneself" in { session =>
+    val api = makeAPI(session)
+    api.addContacts(id1, Seq(id4, id1, id3)) should contain theSameElementsAs Seq(id4, id3)
   }
 
   private def makeAPI(session: DBSession) = {

@@ -2,7 +2,7 @@ package socket
 
 import akka.actor.ActorRef
 import chat.{ToServerChatMessage, ToServerRequestMessagesMessage}
-import contact.{ToServerAddContactMessage, ToServerRequestContactsMessage}
+import contact.{ToServerAddContactMessage, ToServerAddContactsMessage, ToServerRequestContactsMessage}
 import org.joda.time.DateTime
 import play.api.libs.json.{JsValue, Json, Writes}
 
@@ -17,6 +17,8 @@ sealed trait ToServerSocketMessageType extends SocketMessageType {
   def socketMessage(msg: JsValue): ToServerSocketMessage
 
 }
+
+trait ToServerAddContactOrContactsMessage extends ToServerSocketMessage
 
 object ToServerSocketMessageType {
 
@@ -47,13 +49,21 @@ object ToServerSocketMessageType {
     override def socketMessage(msg: JsValue): ToServerAddContactMessage = ToServerAddContactMessage(
        (msg \ "usernameOfContactToAdd").validate[String].getOrElse("")
     )
-}
+  }
+
+  case object ToServerAddContacts extends ToServerSocketMessageType {
+    override val description = "toServerAddContacts"
+    override def socketMessage(msg: JsValue): ToServerAddContactsMessage = ToServerAddContactsMessage(
+       (msg \ "usernamesOfContactToAdd").validate[Seq[String]].getOrElse(Seq())
+    )
+  }
 
   private val socketMessageTypeFrom = Map[String, ToServerSocketMessageType](
     ToServerChat.description -> ToServerChat,
     ToServerRequestMessages.description -> ToServerRequestMessages,
     ToServerRequestContacts.description -> ToServerRequestContacts,
-    ToServerAddContact.description -> ToServerAddContact
+    ToServerAddContact.description -> ToServerAddContact,
+    ToServerAddContacts.description -> ToServerAddContacts
   )
 
   def from(description:String): ToServerSocketMessageType = socketMessageTypeFrom(description)
