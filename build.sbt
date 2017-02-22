@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap" % "4.0.0-alpha.2",
   "org.webjars" % "font-awesome" % "4.6.3",
   "org.webjars" % "react" % "15.1.0",
-  "com.pauldijou" % "jwt-play-json_2.11" % "0.8.0",
+  "com.pauldijou" %% "jwt-play-json" % "0.9.2",
   "org.postgresql" % "postgresql" % "9.4.1208.jre7",
   "commons-validator" % "commons-validator" % "1.5.1",
   "com.typesafe.play" %% "play-mailer" % "5.0.0",
